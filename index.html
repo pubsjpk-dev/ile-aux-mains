@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐢</text></svg>">
+<title>Prototype de validation - L'Arcade Île aux Mains</title>
+<style>
+  :root {
+    --nuit: #1E3A5F;
+    --nuit-fonce: #14293F;
+    --creme: #FAF3E8;
+    --creme-2: #F2E8D5;
+    --ocre: #C98A3D;
+    --ocre-fonce: #A8712C;
+    --encre: #26251F;
+    --gris: #6E6A60;
+    --blanc: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: var(--creme); color: var(--encre); line-height: 1.6; }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; color: var(--nuit); }
+  a { color: var(--ocre-fonce); }
+  img { max-width: 100%; }
+  .conteneur { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* Bandeau prototype */
+  :root { --ruban-h: 30px; }
+  .ruban-proto { background: var(--ocre); color: #fff; text-align: center; font-size: 12.5px; padding: 7px 12px; letter-spacing: .5px; position: fixed; top: 0; left: 0; right: 0; z-index: 200; }
+  .ruban-proto b { letter-spacing: 1px; }
+
+  /* Header */
+  header { position: fixed; top: var(--ruban-h); left: 0; right: 0; z-index: 150; background: rgba(250,243,232,.97); box-shadow: 0 1px 12px rgba(38,37,31,.08); }
+  .header-int { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; gap: 22px; padding: 12px 24px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo .tortue { font-size: 26px; }
+  .logo .nom { font-family: Georgia, serif; color: var(--nuit); font-weight: 700; font-size: 16.5px; line-height: 1.2; }
+  .logo .nom small { display: block; font-family: "Segoe UI", sans-serif; font-weight: 600; font-size: 10.5px; letter-spacing: 2px; color: var(--ocre-fonce); text-transform: uppercase; }
+  nav.principal { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+  nav.principal a.lien { color: var(--encre); text-decoration: none; font-size: 15px; font-weight: 600; padding: 8px 12px; border-radius: 8px; }
+  nav.principal a.lien:hover { background: var(--creme-2); }
+  nav.principal a.lien.actif { color: var(--nuit); background: var(--creme-2); }
+  .btn-rdv { background: var(--ocre); color: #fff !important; padding: 10px 18px !important; border-radius: 999px !important; font-weight: 700 !important; box-shadow: 0 2px 8px rgba(201,138,61,.4); }
+  .btn-rdv:hover { background: var(--ocre-fonce); }
+  .burger { display: none; margin-left: auto; background: none; border: 2px solid var(--nuit); border-radius: 8px; font-size: 20px; padding: 4px 12px; cursor: pointer; color: var(--nuit); }
+
+  /* Vues */
+  .vue { display: none; padding-top: var(--ruban-h); }
+  .vue.visible { display: block; }
+  section[id] { scroll-margin-top: calc(var(--ruban-h) + 74px); }
+
+  /* Hero */
+  .hero { position: relative; min-height: 78vh; display: flex; align-items: center; background: linear-gradient(rgba(20,41,63,.62), rgba(20,41,63,.62)), linear-gradient(135deg, #7A8CA8 0%, #B9C6D6 40%, #8DA3BE 75%, #6E89A8 100%); }
+  .hero .conteneur { position: relative; color: #fff; padding-top: 60px; padding-bottom: 60px; }
+  .badge-hero { color: #EFC08A; letter-spacing: 3px; text-transform: uppercase; font-size: 12.5px; font-weight: 700; margin-bottom: 14px; }
+  .hero h1 { color: #fff; font-size: clamp(32px, 4.6vw, 54px); line-height: 1.18; margin-bottom: 14px; max-width: 820px; }
+  .hero p { font-size: 18px; opacity: .92; max-width: 640px; margin-bottom: 28px; }
+  .note-photo { position: absolute; right: 24px; bottom: 18px; font-size: 11.5px; color: rgba(255,255,255,.55); letter-spacing: .5px; }
+  .btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn { display: inline-block; text-decoration: none; border-radius: 999px; padding: 13px 26px; font-weight: 700; font-size: 15.5px; cursor: pointer; border: none; }
+  .btn-ocre { background: var(--ocre); color: #fff; box-shadow: 0 3px 10px rgba(201,138,61,.45); }
+  .btn-ocre:hover { background: var(--ocre-fonce); }
+  .btn-contour { border: 2px solid rgba(255,255,255,.75); color: #fff; background: transparent; }
+  .btn-contour:hover { background: rgba(255,255,255,.12); }
+  .btn-secondaire { background: var(--creme-2); color: var(--nuit); }
+  .btn-secondaire:hover { background: #E8DBC0; }
+
+  /* Sections */
+  section.bloc { padding: 72px 0; }
+  section.bloc.fond-blanc { background: var(--blanc); }
+  section.bloc.fond-nuit { background: var(--nuit); color: var(--creme); }
+  .titre-bloc { font-size: clamp(26px, 3vw, 36px); margin-bottom: 10px; }
+  .intro-bloc { color: var(--gris); max-width: 700px; margin-bottom: 38px; font-size: 16.5px; }
+  .fond-nuit .titre-bloc { color: var(--creme); }
+  .fond-nuit .intro-bloc { color: rgba(250,243,232,.75); }
+
+  /* Le centre */
+  .centre-duo { display: grid; grid-template-columns: 1.2fr 1fr; gap: 44px; align-items: center; }
+  .centre-texte p { margin-bottom: 16px; font-size: 16.5px; }
+  .photo-temoin { border-radius: 16px; background: linear-gradient(135deg, #C7B79A, #9A8A6A); min-height: 300px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.85); font-size: 14px; letter-spacing: 1px; text-align: center; padding: 20px; }
+  .chiffres-centre { display: flex; gap: 26px; margin-top: 24px; flex-wrap: wrap; }
+  .chiffre-c b { display: block; font-family: Georgia, serif; font-size: 30px; color: var(--ocre-fonce); }
+  .chiffre-c span { font-size: 13.5px; color: var(--gris); }
+
+  /* Services */
+  .grille-services { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .carte-service { background: var(--blanc); border: 1px solid var(--creme-2); border-radius: 16px; padding: 24px 20px; cursor: pointer; transition: transform .15s, box-shadow .15s; display: flex; flex-direction: column; }
+  .carte-service:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(38,37,31,.1); border-color: var(--ocre); }
+  .carte-service .ico { font-size: 30px; margin-bottom: 12px; }
+  .carte-service h3 { font-size: 18.5px; margin-bottom: 8px; line-height: 1.3; }
+  .carte-service p { font-size: 14px; color: var(--gris); flex-grow: 1; }
+  .carte-service .qui { margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--ocre-fonce); }
+  section.bloc.fond-nuit .carte-service { background: rgba(250,243,232,.06); border-color: rgba(250,243,232,.15); }
+  section.bloc.fond-nuit .carte-service h3 { color: var(--creme); }
+  section.bloc.fond-nuit .carte-service p { color: rgba(250,243,232,.7); }
+
+  /* Praticiens */
+  .grille-praticiens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .carte-praticien { background: var(--blanc); border: 1px solid var(--creme-2); border-radius: 16px; padding: 26px; text-align: center; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .carte-praticien:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(38,37,31,.1); border-color: var(--ocre); }
+  .avatar { width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 28px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--nuit), #3A5F8A); }
+  .carte-praticien h3 { font-size: 19px; margin-bottom: 4px; }
+  .carte-praticien .spec { font-size: 14px; color: var(--ocre-fonce); font-weight: 600; margin-bottom: 10px; }
+  .carte-praticien .desc { font-size: 13.5px; color: var(--gris); margin-bottom: 14px; }
+  .carte-praticien .voir { font-size: 14px; font-weight: 700; color: var(--nuit); }
+
+  /* Agenda */
+  .agenda-duo { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; }
+  table.horaires { width: 100%; border-collapse: collapse; background: var(--blanc); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(38,37,31,.06); }
+  table.horaires th { background: var(--nuit); color: var(--creme); text-align: left; padding: 12px 18px; font-size: 14px; }
+  table.horaires td { padding: 12px 18px; border-top: 1px solid var(--creme-2); font-size: 14.5px; }
+  table.horaires td.qui { color: var(--ocre-fonce); font-weight: 600; }
+  .event { background: var(--blanc); border-left: 4px solid var(--ocre); border-radius: 0 12px 12px 0; padding: 16px 20px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(38,37,31,.05); }
+  .event b { color: var(--nuit); }
+  .event .quand { font-size: 13px; color: var(--ocre-fonce); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Galerie */
+  .grille-galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
+  .oeuvre { border-radius: 12px; min-height: 190px; display: flex; align-items: flex-end; padding: 14px; color: #fff; font-size: 13px; font-weight: 600; }
+  .oeuvre.o1 { background: linear-gradient(150deg, #31456B, #1E3A5F 60%, #16273D); }
+  .oeuvre.o2 { background: linear-gradient(150deg, #8A6A3A, #5C4526); }
+  .oeuvre.o3 { background: linear-gradient(150deg, #4E6E8E, #2C4664); }
+  .lien-gyotaku { font-size: 14.5px; }
+  .lien-gyotaku a { color: #EFC08A; font-weight: 700; }
+
+  /* Infos */
+  .infos-duo { display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: start; }
+  .adresse { font-size: 17px; margin-bottom: 22px; }
+  .adresse b { font-family: Georgia, serif; font-size: 20px; color: var(--nuit); display: block; margin-bottom: 6px; }
+  .acces { display: flex; flex-direction: column; gap: 12px; }
+  .moyen { display: flex; gap: 14px; background: var(--blanc); border: 1px solid var(--creme-2); border-radius: 12px; padding: 14px 18px; font-size: 14.5px; }
+  .moyen .ico { font-size: 22px; }
+  .moyen b { color: var(--nuit); }
+  .carte-temoin { border-radius: 16px; background: linear-gradient(135deg, #D8E2EC, #B9C9DA); min-height: 300px; display: flex; align-items: center; justify-content: center; color: var(--nuit); font-weight: 700; letter-spacing: 1px; }
+
+  /* Footer */
+  footer { background: var(--nuit-fonce); color: rgba(250,243,232,.75); padding: 40px 0 30px; font-size: 14px; }
+  .footer-int { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: center; }
+  footer a { color: #EFC08A; }
+  .proto-note { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(250,243,232,.15); font-size: 12.5px; color: rgba(250,243,232,.45); }
+
+  /* Fiches praticien */
+  .bandeau-fiche { background: linear-gradient(rgba(20,41,63,.8), rgba(20,41,63,.85)), linear-gradient(135deg, #7A8CA8, #B9C6D6); color: #fff; padding: 90px 0 46px; }
+  .retour { display: inline-block; color: #EFC08A; text-decoration: none; font-size: 14px; font-weight: 700; margin-bottom: 22px; }
+  .retour:hover { text-decoration: underline; }
+  .bandeau-fiche .avatar { margin: 0 0 14px; }
+  .bandeau-fiche h1 { color: #fff; font-size: clamp(30px, 4vw, 44px); margin-bottom: 6px; }
+  .bandeau-fiche .spec-hero { color: #EFC08A; font-weight: 700; letter-spacing: 1px; font-size: 15px; text-transform: uppercase; }
+  .fiche-corps { padding: 52px 0 70px; }
+  .fiche-duo { display: grid; grid-template-columns: 1.3fr 1fr; gap: 46px; align-items: start; }
+  .fiche-bio p { margin-bottom: 14px; font-size: 16px; }
+  .fiche-bloc { background: var(--blanc); border: 1px solid var(--creme-2); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+  .fiche-bloc h3 { font-size: 17px; margin-bottom: 10px; }
+  .fiche-bloc ul { list-style: none; }
+  .fiche-bloc li { padding: 7px 0 7px 24px; position: relative; border-bottom: 1px dashed var(--creme-2); font-size: 14.5px; }
+  .fiche-bloc li:last-child { border-bottom: none; }
+  .fiche-bloc li::before { content: ""; position: absolute; left: 4px; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--ocre); }
+  .contact-bloc { background: var(--nuit); color: var(--creme); border-radius: 14px; padding: 24px; }
+  .contact-bloc h3 { color: var(--creme); margin-bottom: 14px; font-size: 17px; }
+  .contact-ligne { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; font-size: 14.5px; }
+  .contact-ligne .ico { font-size: 18px; }
+  .contact-bloc a { color: #EFC08A; text-decoration: none; font-weight: 700; }
+  .contact-bloc a:hover { text-decoration: underline; }
+  .btn-bloc { display: block; text-align: center; background: var(--ocre); color: #fff; text-decoration: none; border-radius: 999px; padding: 12px 20px; font-weight: 700; margin-top: 16px; }
+  .btn-bloc:hover { background: var(--ocre-fonce); }
+
+  /* Modal RDV */
+  .fond-modal { position: fixed; inset: 0; background: rgba(20,41,63,.6); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .fond-modal.ouvert { display: flex; }
+  .modal { background: var(--creme); border-radius: 18px; max-width: 560px; width: 100%; max-height: 86vh; overflow-y: auto; padding: 30px; position: relative; }
+  .modal h2 { font-size: 24px; margin-bottom: 6px; }
+  .modal .sous { color: var(--gris); font-size: 14.5px; margin-bottom: 22px; }
+  .fermer { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--gris); }
+  .rdv-pers { display: flex; align-items: center; gap: 14px; background: var(--blanc); border: 1px solid var(--creme-2); border-radius: 12px; padding: 13px 16px; margin-bottom: 10px; }
+  .rdv-pers .avatar { width: 44px; height: 44px; font-size: 15px; margin: 0; }
+  .rdv-pers .info { flex-grow: 1; }
+  .rdv-pers .info b { color: var(--nuit); display: block; font-size: 15px; }
+  .rdv-pers .info span { font-size: 12.5px; color: var(--gris); }
+  .rdv-pers a.cta-ligne { background: var(--creme-2); color: var(--nuit); text-decoration: none; font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 999px; white-space: nowrap; }
+  .rdv-pers a.cta-ligne:hover { background: #E8DBC0; }
+
+  /* Toast retour navigation */
+  .flash { outline: 3px solid var(--ocre); outline-offset: 6px; border-radius: 16px; transition: outline-color .3s; }
+
+  /* Feedback */
+  .btn-feedback { position: fixed; bottom: 22px; right: 22px; z-index: 250; width: 54px; height: 54px; border-radius: 50%; border: none; background: var(--ocre); color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 14px rgba(201,138,61,.5); transition: transform .15s; }
+  .btn-feedback:hover { transform: scale(1.08); background: var(--ocre-fonce); }
+  .modal textarea { width: 100%; min-height: 110px; border: 1px solid var(--creme-2); border-radius: 10px; padding: 12px; font: inherit; font-size: 14.5px; resize: vertical; background: var(--blanc); color: var(--encre); }
+  .modal input[type="text"] { width: 100%; border: 1px solid var(--creme-2); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14.5px; margin-bottom: 12px; background: var(--blanc); color: var(--encre); }
+  .modal .merci { display: none; text-align: center; padding: 20px 0 8px; }
+  .modal .merci.visible { display: block; }
+
+  /* Mobile */
+  @media (max-width: 860px) {
+    .header-int { gap: 12px; }
+    nav.principal { position: fixed; top: 84px; left: 0; right: 0; background: var(--creme); flex-direction: column; align-items: stretch; padding: 14px 20px 22px; gap: 6px; box-shadow: 0 14px 30px rgba(38,37,31,.15); display: none; }
+    nav.principal.ouvert { display: flex; }
+    nav.principal a.lien { padding: 12px 14px; }
+    .burger { display: block; }
+    .btn-rdv.mobile-cache { display: none; }
+    .grille-services { grid-template-columns: repeat(2, 1fr); }
+    .grille-praticiens, .centre-duo, .agenda-duo, .infos-duo, .fiche-duo { grid-template-columns: 1fr; }
+    .grille-galerie { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .ruban-proto { font-size: 11.5px; }
+    .ruban-proto .part-cachee { display: none; }
+    .grille-services { grid-template-columns: 1fr; }
+    .grille-galerie { grid-template-columns: 1fr; }
+    .hero { min-height: 66vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ruban-proto"><b>PROTOTYPE DE VALIDATION &middot; v1 &middot; 13.10.2026</b> &middot; &#128172; en bas à droite = donne ton retour<span class="part-cachee"> &middot; photos = emplacements témoins</span></div>
+
+<header>
+  <div class="header-int">
+    <a class="logo" href="#/" data-route="#/">
+      <span class="tortue">&#128034;</span>
+      <span class="nom">L'Arcade Île aux Mains<small>Versoix</small></span>
+    </a>
+    <button class="burger" onclick="document.getElementById('navP').classList.toggle('ouvert')">&#9776;</button>
+    <nav class="principal" id="navP">
+      <a class="lien" href="#/" data-route="#/">Accueil</a>
+      <a class="lien" href="#services" data-ancre="services">Nos services</a>
+      <a class="lien" href="#agenda" data-ancre="agenda">Agenda</a>
+      <a class="lien" href="#galerie" data-ancre="galerie">Galerie</a>
+      <a class="lien" href="#infos" data-ancre="infos">Infos</a>
+      <a class="lien btn-rdv" href="#" onclick="ouvrirRdv(event)">Prendre rendez-vous</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ==================== ACCUEIL ==================== -->
+<div class="vue" id="vue-accueil">
+
+  <section class="hero">
+    <div class="conteneur">
+      <div class="badge-hero">Arcade Île aux Mains &middot; Versoix</div>
+      <h1>Des approches thérapeutiques multiples au service de votre santé</h1>
+      <p>Qi Gong, Tai Ji Quan, acupuncture, shiatsu, sonothérapie, coaching. Un collectif de praticiens à 5 minutes de la gare de Versoix, ouvert à tous toute l'année.</p>
+      <div class="btns">
+        <a class="btn btn-ocre" href="#services" data-ancre="services">Découvrir nos services</a>
+        <a class="btn btn-contour" href="#infos" data-ancre="infos">Infos &amp; accès</a>
+      </div>
+    </div>
+    <div class="note-photo">[ emplacement : photo réelle du lieu ]</div>
+  </section>
+
+  <section class="bloc fond-blanc" id="centre">
+    <div class="conteneur">
+      <div class="centre-duo">
+        <div class="centre-texte">
+          <h2 class="titre-bloc">Le centre</h2>
+          <p>Parce que nous sommes des thérapeutes toujours en quête de savoir, que la santé est une approche globale du bien-être physique, psychique et social, et que nous sommes tous responsables de notre santé, vous trouverez à l'Arcade de multiples approches thérapeutiques, fruits de nos coups de cœur et de nos rencontres professionnelles.</p>
+          <p>Ouvert à tous, toute l'année. Uniquement sur rendez-vous auprès du praticien ou de l'enseignant concerné.</p>
+          <div class="chiffres-centre">
+            <div class="chiffre-c"><b>5</b><span>praticien·nes</span></div>
+            <div class="chiffre-c"><b>8</b><span>services proposés</span></div>
+            <div class="chiffre-c"><b>5 min</b><span>de la gare CFF</span></div>
+          </div>
+        </div>
+        <div class="photo-temoin">[ emplacement : photo de l'intérieur de l'Arcade ]</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc" id="services">
+    <div class="conteneur">
+      <h2 class="titre-bloc">Nos services</h2>
+      <p class="intro-bloc">Le visiteur part de son besoin, pas de nos noms. Chaque carte mène au praticien qui le propose. Cliquez pour tester.</p>
+      <div class="grille-services">
+        <div class="carte-service" onclick="allerVersPraticien('christiane')" data-qui="christiane,jp">
+          <div class="ico">&#129497;</div>
+          <h3>Qi Gong &amp; Tai Ji Quan</h3>
+          <p>Arts énergétiques chinois : mouvements lents, respiration, concentration. Cours hebdomadaires, tous niveaux.</p>
+          <div class="qui">Avec Christiane (mercredi) et JP (jeudi) &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('ilona')">
+          <div class="ico">&#129683;</div>
+          <h3>Acupuncture &amp; soins de cicatrices</h3>
+          <p>Traitement des cicatrices obstétricales (césarienne, épisiotomie) et suivi énergétique par acupuncture.</p>
+          <div class="qui">Avec Ilona &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('ilona')">
+          <div class="ico">&#128068;</div>
+          <h3>Shiatsu</h3>
+          <p>Pression des doigts sur les méridiens pour rééquilibrer l'énergie et relâcher les tensions profondes.</p>
+          <div class="qui">Avec Ilona &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('sarah')">
+          <div class="ico">&#127911;</div>
+          <h3>Sonothérapie &amp; acupression</h3>
+          <p>Vibrations sonores et acupression pour une détente profonde, apaiser le stress et relâcher les tensions.</p>
+          <div class="qui">Avec Sarah &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('marie-ange')">
+          <div class="ico">&#129309;</div>
+          <h3>Coaching &amp; accompagnement</h3>
+          <p>Coaching amoureux, mission de vie, accompagnement des étapes de la vie, ateliers.</p>
+          <div class="qui">Avec Marie-Ange &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('christiane')">
+          <div class="ico">&#129496;</div>
+          <h3>Méditation &amp; ateliers</h3>
+          <p>Une rencontre avec soi-même, puis les autres. Progresser vers la stabilité et le calme.</p>
+          <div class="qui">Avec Christiane &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersAncre('agenda')">
+          <div class="ico">&#128197;</div>
+          <h3>Stages &amp; événements</h3>
+          <p>Ateliers, expositions, séminaires, stages. L'agenda recense les prochains rendez-vous du collectif.</p>
+          <div class="qui">Voir l'agenda &rarr;</div>
+        </div>
+        <div class="carte-service" onclick="allerVersPraticien('ilona')">
+          <div class="ico">&#128105;&#8205;&#128099;</div>
+          <h3>Cercle de parole femmes</h3>
+          <p>Groupe de parole autour de la césarienne et des cicatrices visibles et invisibles.</p>
+          <div class="qui">Animé par Ilona &rarr;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc fond-nuit" id="praticiens">
+    <div class="conteneur">
+      <h2 class="titre-bloc">Les praticiens</h2>
+      <p class="intro-bloc">Un collectif uni et cohérent, c'est ce qui nous différencie. Cliquez sur une carte pour ouvrir la fiche : bio, offre, tarifs, horaires, contact direct.</p>
+      <div class="grille-praticiens">
+        <div class="carte-praticien" onclick="allerVersPraticien('ilona')">
+          <div class="avatar">IS</div>
+          <h3>Ilona Stephani</h3>
+          <div class="spec">Acupuncture &middot; cicatrices &middot; shiatsu</div>
+          <div class="desc">Praticienne de médecine chinoise depuis 40 ans, spécialiste des soins de cicatrices obstétricales.</div>
+          <div class="voir">Voir la fiche &rarr;</div>
+        </div>
+        <div class="carte-praticien" onclick="allerVersPraticien('christiane')">
+          <div class="avatar">CK</div>
+          <h3>Christiane Kurth</h3>
+          <div class="spec">Qi Gong &middot; Tai Ji Quan &middot; méditation</div>
+          <div class="desc">Enseignante diplômée fédérale, formée auprès de Gérard Edde et du Dr Liu Dong.</div>
+          <div class="voir">Voir la fiche &rarr;</div>
+        </div>
+        <div class="carte-praticien" onclick="allerVersPraticien('jp')">
+          <div class="avatar">JP</div>
+          <h3>JP Kuhni</h3>
+          <div class="spec">Qi Gong, jeudi soir</div>
+          <div class="desc">Plus de 30 ans de pratique, école Longmen. 1er Duan de Tai-chi Chuan (FAEMC).</div>
+          <div class="voir">Voir la fiche &rarr;</div>
+        </div>
+        <div class="carte-praticien" onclick="allerVersPraticien('sarah')">
+          <div class="avatar">SA</div>
+          <h3>Sarah Alessi</h3>
+          <div class="spec">Sonothérapie &middot; acupression</div>
+          <div class="desc">Sonothérapeute, maître Reiki Usui et Shamballa, Access Bars.</div>
+          <div class="voir">Voir la fiche &rarr;</div>
+        </div>
+        <div class="carte-praticien" onclick="allerVersPraticien('marie-ange')">
+          <div class="avatar">MS</div>
+          <h3>Marie-Ange Shum</h3>
+          <div class="spec">Coaching &middot; accompagnement</div>
+          <div class="desc">Coaching amoureux, mission de vie, ateliers.</div>
+          <div class="voir">Voir la fiche &rarr;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc fond-blanc" id="agenda">
+    <div class="conteneur">
+      <h2 class="titre-bloc">Agenda &amp; ateliers</h2>
+      <p class="intro-bloc">Les horaires récurrents en un coup d'oeil, puis les prochains événements.</p>
+      <div class="agenda-duo">
+        <table class="horaires">
+          <tr><th>Cours</th><th>Quand</th><th>Qui</th></tr>
+          <tr><td>Qi Gong</td><td>Mercredi 9h30 - 10h30</td><td class="qui">Christiane</td></tr>
+          <tr><td>Tai Ji Quan I</td><td>Mercredi 10h30 - 12h00</td><td class="qui">Christiane</td></tr>
+          <tr><td>Qi Gong</td><td>Jeudi soir</td><td class="qui">JP</td></tr>
+          <tr><td>Méditation (atelier)</td><td>Sur demande</td><td class="qui">Christiane</td></tr>
+        </table>
+        <div>
+          <div class="event"><div class="quand">Prochain atelier</div><b>Cercle de parole femmes : cicatrices visibles et invisibles</b><br>Dates à venir, sur inscription auprès d'Ilona.</div>
+          <div class="event"><div class="quand">Exposition</div><b>Gyotaku, exposition permanente</b><br>Les oeuvres d'Ilona à découvrir dans la galerie de l'Arcade, sur rendez-vous.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloc fond-nuit" id="galerie">
+    <div class="conteneur">
+      <h2 class="titre-bloc">Côté galerie</h2>
+      <p class="intro-bloc">L'âme artistique du lieu, comme décidé le 28.09 : les oeuvres d'Ilona et les expositions trouvent ici leur place. Le tableau d'iris de l'actuel accueil vivrait ici.</p>
+      <div class="grille-galerie">
+        <div class="oeuvre o1">[ oeuvre 1 : Gyotaku ]</div>
+        <div class="oeuvre o2">[ oeuvre 2 : encre et papier ]</div>
+        <div class="oeuvre o3">[ oeuvre 3 : exposition en cours ]</div>
+      </div>
+      <p class="lien-gyotaku">Exposition permanente : Gyotaku d'Ilona Stephani, sur rendez-vous. <a href="https://www.ileauxmains.com/art" target="_blank">Découvrir l'univers Gyotaku</a></p>
+    </div>
+  </section>
+
+  <section class="bloc" id="infos">
+    <div class="conteneur">
+      <h2 class="titre-bloc">Où nous trouver</h2>
+      <p class="intro-bloc">L'Arcade Île aux Mains, 45 route de Suisse, 1290 Versoix.</p>
+      <div class="infos-duo">
+        <div>
+          <div class="adresse"><b>45 route de Suisse</b>1290 Versoix, canton de Genève</div>
+          <div class="acces">
+            <div class="moyen"><span class="ico">&#128649;</span><div><b>Train</b><br>Gare CFF de Versoix, 5 minutes à pieds.</div></div>
+            <div class="moyen"><span class="ico">&#128652;</span><div><b>Bus</b><br>Ligne TPG « V », arrêts Place du Bourg ou Gare CFF.</div></div>
+            <div class="moyen"><span class="ico">&#9875;&#65039;</span><div><b>Bateau</b><br>CGN, quai de Versoix.</div></div>
+            <div class="moyen"><span class="ico">&#128663;</span><div><b>Voiture</b><br>3 parkings couverts : Coop, Migros, gare.</div></div>
+          </div>
+        </div>
+        <div class="carte-temoin">[ emplacement : plan Google Maps ]</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="conteneur footer-int">
+      <div>&#128034; L'Arcade Île aux Mains &middot; 45 route de Suisse, 1290 Versoix</div>
+      <div><a href="mailto:ile.aux.mains@gmail.com">ile.aux.mains@gmail.com</a></div>
+    </div>
+    <div class="conteneur proto-note">Prototype de validation v1 (13.10.2026), préparé par JP d'après le document « Proposition refonte site ». Les textes des fiches sont des extraits du site actuel. Merci d'utiliser le bouton &#128172; pour tes retours.</div>
+  </footer>
+</div>
+
+<!-- ==================== FICHES PRATICIENS ==================== -->
+<div class="vue" id="vue-ilona">
+  <div class="bandeau-fiche"><div class="conteneur">
+    <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
+    <div class="avatar">IS</div>
+    <h1>Ilona Stephani</h1>
+    <div class="spec-hero">Acupuncture &middot; soins de cicatrices &middot; shiatsu</div>
+  </div></div>
+  <div class="fiche-corps"><div class="conteneur fiche-duo">
+    <div class="fiche-bio">
+      <h2>Son parcours</h2>
+      <p>Praticienne de médecine chinoise et de shiatsu depuis quarante ans, c'est dans une approche pluridisciplinaire qu'Ilona s'est intéressée au suivi de grossesse et au post-partum, puis au soin des cicatrices.</p>
+      <p>Affiliations : FFST, UPS et ASS/SGS (shiatsu), FEQGAE (Qi Gong), UFP-MTC (acupuncture). Licence d'acupuncture du College of Traditional Acupuncture UK (Worsley, 1988).</p>
+      <div class="fiche-bloc">
+        <h3>Ses offres</h3>
+        <ul>
+          <li>Séance individuelle d'acupuncture : 120 CHF</li>
+          <li>Soins des cicatrices obstétricales : césarienne, épisiotomie</li>
+          <li>Cercles de parole femmes : cicatrices visibles et invisibles</li>
+          <li>Formations pour professionnels (MTC, sages-femmes)</li>
+          <li>Shiatsu</li>
+        </ul>
+      </div>
+      <div class="fiche-bloc">
+        <h3>Le soin des cicatrices en bref</h3>
+        <ul>
+          <li>Une cicatrice perturbe le corps au niveau tissulaire et circulatoire</li>
+          <li>Effets : vitalité nouvelle, retour de la sensibilité, détente des tissus</li>
+          <li>Le plus souvent une séance suffit</li>
+          <li>Contre-indications : césarienne de moins d'un mois, début de grossesse</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-bloc">
+      <h3>Prendre rendez-vous avec Ilona</h3>
+      <div class="contact-ligne"><span class="ico">&#128241;</span>SMS / WhatsApp : <a href="tel:+33601733546">+33 6 01 73 35 46</a></div>
+      <div class="contact-ligne"><span class="ico">&#9993;&#65039;</span><a href="mailto:ile.aux.mains@gmail.com?subject=Demande de renseignement / Rendez-vous VERSOIX">ile.aux.mains@gmail.com</a></div>
+      <div class="contact-ligne"><span class="ico">&#128205;</span>Sur rendez-vous uniquement, à l'Arcade.</div>
+    </div>
+  </div></div>
+</div>
+
+<div class="vue" id="vue-christiane">
+  <div class="bandeau-fiche"><div class="conteneur">
+    <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
+    <div class="avatar">CK</div>
+    <h1>Christiane Kurth</h1>
+    <div class="spec-hero">Qi Gong &middot; Tai Ji Quan &middot; méditation</div>
+  </div></div>
+  <div class="fiche-corps"><div class="conteneur fiche-duo">
+    <div class="fiche-bio">
+      <h2>Son parcours</h2>
+      <p>Passionnée par l'Asie depuis l'adolescence, Christiane étudie le shiatsu à Genève puis décide de devenir enseignante de Qi Gong et de Tai Ji Quan. Agréée de l'Union Pro Qi Gong, elle se forme auprès des maîtres Gérard Edde et Dr Liu Dong.</p>
+      <p>Diplôme fédéral d'enseignante de Qi Gong (Union Pro Qi Gong, FEQGAE), premier Duan de Tai Ji Quan, formation de shiatsu à l'ISS de Genève.</p>
+      <div class="fiche-bloc">
+        <h3>Ses cours (horaires)</h3>
+        <ul>
+          <li>Mercredi 9h30 - 10h30 : Qi Gong</li>
+          <li>Mercredi 10h30 - 12h00 : Tai Ji Quan I</li>
+          <li>Ateliers de méditation : sur demande</li>
+          <li>Autres horaires possibles sur demande</li>
+        </ul>
+      </div>
+      <div class="fiche-bloc">
+        <h3>Sa pratique</h3>
+        <ul>
+          <li>Qi signifie le souffle, l'énergie ; Gong, la maîtrise</li>
+          <li>Un art qui harmonise coeur, respiration et forme corporelle</li>
+          <li>Une philosophie de vie qui nous relie à la nature</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-bloc">
+      <h3>Contacter Christiane</h3>
+      <div class="contact-ligne"><span class="ico">&#128222;</span><a href="tel:+41788114070">+41 78 811 40 70</a></div>
+      <div class="contact-ligne"><span class="ico">&#9993;&#65039;</span><a href="mailto:christiane.kurth2509@gmail.com">christiane.kurth2509@gmail.com</a></div>
+      <div class="contact-ligne"><span class="ico">&#127760;</span>Site : larbredejade.ch</div>
+      <div class="contact-ligne"><span class="ico">&#128205;</span>Cours à l'Arcade, sur inscription.</div>
+    </div>
+  </div></div>
+</div>
+
+<div class="vue" id="vue-jp">
+  <div class="bandeau-fiche"><div class="conteneur">
+    <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
+    <div class="avatar">JP</div>
+    <h1>JP Kuhni</h1>
+    <div class="spec-hero">Qi Gong, le jeudi soir</div>
+  </div></div>
+  <div class="fiche-corps"><div class="conteneur fiche-duo">
+    <div class="fiche-bio">
+      <h2>Son parcours</h2>
+      <p>La rencontre avec les arts énergétiques a commencé il y a plus de quarante ans, par le judo puis l'aïkido, avant de s'ancrer dans le Qi Gong et le Tai-chi Chuan à partir de 1986, et la méditation dès les années 1990.</p>
+      <p>Depuis 2017, il consacre l'essentiel de sa pratique au Qi Gong au sein de l'école de Longmen (La Porte du Dragon) sous la direction de Gérald et Nathalie Edde : les Huit Vaisseaux Extraordinaires, les Neuf Palais, les Cinq Animaux, le Pilier de Jade.</p>
+      <p>Titulaire du 1er Duan de Tai-chi Chuan (FAEMC), il poursuit en 2026 le certificat de formateur pour adultes.</p>
+      <div class="fiche-bloc">
+        <h3>Son offre</h3>
+        <ul>
+          <li>Cours hebdomadaire de Qi Gong : le jeudi soir à l'Arcade</li>
+          <li>Tous niveaux : détente, souffle, énergie</li>
+          <li>École Dragon Or</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-bloc">
+      <h3>Contacter JP</h3>
+      <div class="contact-ligne"><span class="ico">&#127760;</span><a href="http://www.dragon-or.ch/" target="_blank">www.dragon-or.ch</a></div>
+      <div class="contact-ligne"><span class="ico">&#128205;</span>Cours à l'Arcade, 45 route de Suisse, Versoix.</div>
+      <a class="btn-bloc" href="#" onclick="ouvrirRdv(event)">Écrire à JP</a>
+    </div>
+  </div></div>
+</div>
+
+<div class="vue" id="vue-sarah">
+  <div class="bandeau-fiche"><div class="conteneur">
+    <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
+    <div class="avatar">SA</div>
+    <h1>Sarah Alessi</h1>
+    <div class="spec-hero">Sonothérapie &middot; acupression</div>
+  </div></div>
+  <div class="fiche-corps"><div class="conteneur fiche-duo">
+    <div class="fiche-bio">
+      <h2>Son parcours</h2>
+      <p>Sonothérapeute et praticienne d'acupression, maître Reiki Usui et Shamballa, Access Bars et énergéticienne.</p>
+      <p>Empathique et sensible, elle met son savoir à disposition de toutes les personnes souhaitant retrouver leur lumière et avancer sur leur chemin de vie avec joie et légèreté.</p>
+      <div class="fiche-bloc">
+        <h3>Son offre</h3>
+        <ul>
+          <li>Séances de sonothérapie (bols, voix, vibrations)</li>
+          <li>Acupression</li>
+          <li>Ateliers</li>
+        </ul>
+      </div>
+      <div class="fiche-bloc">
+        <h3>Pourquoi la sonothérapie ?</h3>
+        <ul>
+          <li>Stress et troubles anxieux</li>
+          <li>Certaines douleurs, tensions physiques et émotionnelles</li>
+          <li>État de détente profonde</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-bloc">
+      <h3>Contacter Sarah</h3>
+      <div class="contact-ligne"><span class="ico">&#128222;</span><a href="tel:+41763992315">+41 76 399 23 15</a></div>
+      <div class="contact-ligne"><span class="ico">&#128205;</span>Sur rendez-vous, à l'Arcade.</div>
+    </div>
+  </div></div>
+</div>
+
+<div class="vue" id="vue-marie-ange">
+  <div class="bandeau-fiche"><div class="conteneur">
+    <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
+    <div class="avatar">MS</div>
+    <h1>Marie-Ange Shum</h1>
+    <div class="spec-hero">Coaching &middot; accompagnement</div>
+  </div></div>
+  <div class="fiche-corps"><div class="conteneur fiche-duo">
+    <div class="fiche-bio">
+      <h2>Son parcours</h2>
+      <p>Marie-Ange accompagne les personnes sur les chemins du coeur et du sens : coaching amoureux, mission de vie, ateliers.</p>
+      <div class="fiche-bloc">
+        <h3>Son offre</h3>
+        <ul>
+          <li>Coaching amoureux</li>
+          <li>Coaching mission de vie</li>
+          <li>Ateliers</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contact-bloc">
+      <h3>Contacter Marie-Ange</h3>
+      <div class="contact-ligne"><span class="ico">&#127760;</span><a href="https://www.cercledesanges.ch/" target="_blank">www.cercledesanges.ch</a></div>
+      <div class="contact-ligne"><span class="ico">&#128205;</span>Rendez-vous via son site.</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ==================== FEEDBACK ==================== -->
+<button class="btn-feedback" id="btnFeedback" onclick="ouvrirFeedback()" title="Donner ton retour">&#128172;</button>
+<div class="fond-modal" id="modalFeedback" onclick="if (event.target === this) fermerFeedback()">
+  <div class="modal">
+    <button class="fermer" onclick="fermerFeedback()">&times;</button>
+    <div id="feedbackForm">
+      <h2>Ton retour sur le prototype</h2>
+      <p class="sous">Page en cours : <b id="feedbackPage">accueil</b>. Dis-nous ce qui te plaît, ce qui coince, ce qui manque.</p>
+      <input type="text" id="feedbackNom" placeholder="Ton prénom (optionnel)">
+      <textarea id="feedbackTexte" placeholder="Ton retour..."></textarea>
+      <a class="btn-bloc" id="btnEnvoyerFeedback" href="#" onclick="envoyerFeedback(event)">Envoyer mon retour</a>
+    </div>
+    <div class="merci" id="feedbackMerci">
+      <h2>&#127881; Merci !</h2>
+      <p class="sous">Ton logiciel de mail s'est ouvert avec ton retour prérempli : il ne reste qu'à appuyer sur Envoyer.</p>
+      <a class="btn-bloc" href="#" onclick="fermerFeedback()" style="text-align:center">Fermer</a>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL RDV ==================== -->
+<div class="fond-modal" id="modalRdv" onclick="if (event.target === this) fermerRdv()">
+  <div class="modal">
+    <button class="fermer" onclick="fermerRdv()">&times;</button>
+    <h2>Prendre rendez-vous</h2>
+    <p class="sous">Toutes les prestations se font directement auprès du praticien concerné. Choisissez la personne que vous cherchez :</p>
+    <div class="rdv-pers">
+      <div class="avatar">IS</div>
+      <div class="info"><b>Ilona Stephani</b><span>acupuncture, cicatrices, shiatsu</span></div>
+      <a class="cta-ligne" href="mailto:ile.aux.mains@gmail.com?subject=Rendez-vous">Écrire</a>
+    </div>
+    <div class="rdv-pers">
+      <div class="avatar">CK</div>
+      <div class="info"><b>Christiane Kurth</b><span>Qi Gong, Tai Ji Quan, méditation</span></div>
+      <a class="cta-ligne" href="mailto:christiane.kurth2509@gmail.com">Écrire</a>
+    </div>
+    <div class="rdv-pers">
+      <div class="avatar">JP</div>
+      <div class="info"><b>JP Kuhni</b><span>Qi Gong, jeudi soir</span></div>
+      <a class="cta-ligne" href="http://www.dragon-or.ch/" target="_blank">Site</a>
+    </div>
+    <div class="rdv-pers">
+      <div class="avatar">SA</div>
+      <div class="info"><b>Sarah Alessi</b><span>sonothérapie, acupression</span></div>
+      <a class="cta-ligne" href="tel:+41763992315">Appeler</a>
+    </div>
+    <div class="rdv-pers">
+      <div class="avatar">MS</div>
+      <div class="info"><b>Marie-Ange Shum</b><span>coaching, accompagnement</span></div>
+      <a class="cta-ligne" href="https://www.cercledesanges.ch/" target="_blank">Site</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const fiches = ["ilona", "christiane", "jp", "sarah", "marie-ange"];
+
+  function montrerVue(nom) {
+    document.querySelectorAll(".vue").forEach(v => v.classList.remove("visible"));
+    document.getElementById("vue-" + nom).classList.add("visible");
+    window.scrollTo(0, 0);
+  }
+
+  function router() {
+    const h = location.hash || "#/";
+    const m = h.match(/^#\/([a-z-]+)$/);
+    if (m && fiches.includes(m[1])) {
+      montrerVue(m[1]);
+      activerLienMenu(null);
+    } else {
+      montrerVue("accueil");
+      if (h.startsWith("#") && h.length > 2 && !h.startsWith("#/")) {
+        const cible = document.getElementById(h.slice(1));
+        if (cible) setTimeout(() => cible.scrollIntoView({ behavior: "smooth" }), 60);
+      }
+    }
+    document.getElementById("navP").classList.remove("ouvert");
+  }
+
+  function activerLienMenu(ancre) {
+    document.querySelectorAll("nav.principal a[data-ancre]").forEach(a => {
+      a.classList.toggle("actif", a.dataset.ancre === ancre);
+    });
+  }
+
+  function allerVersPraticien(id) {
+    location.hash = "#/" + id;
+  }
+
+  function allerVersAncre(id) {
+    if (!document.getElementById("vue-accueil").classList.contains("visible")) {
+      location.hash = "#/";
+      setTimeout(() => document.getElementById(id).scrollIntoView({ behavior: "smooth" }), 100);
+    } else {
+      document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  // Clics sur les ancres du menu quand on est déjà sur l'accueil
+  document.querySelectorAll("[data-ancre]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const id = a.dataset.ancre;
+      if (!document.getElementById("vue-accueil").classList.contains("visible")) {
+        location.hash = "#/";
+        setTimeout(() => document.getElementById(id).scrollIntoView({ behavior: "smooth" }), 100);
+      } else {
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  });
+
+  // Boutons retour des fiches
+  document.querySelectorAll("[data-retour]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      location.hash = "#/";
+      setTimeout(() => document.getElementById(a.dataset.retour).scrollIntoView({ behavior: "smooth" }), 100);
+    });
+  });
+
+  // Logo : retour en haut de l'accueil
+  document.querySelectorAll("[data-route]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      location.hash = "#/";
+      montrerVue("accueil");
+    });
+  });
+
+  function ouvrirRdv(e) { if (e) e.preventDefault(); document.getElementById("modalRdv").classList.add("ouvert"); }
+  function fermerRdv() { document.getElementById("modalRdv").classList.remove("ouvert"); }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") fermerRdv(); });
+
+  // Scrollspy : lien de menu actif au défilement
+  const obs = new IntersectionObserver((entries) => {
+    if (!document.getElementById("vue-accueil").classList.contains("visible")) return;
+    entries.forEach(en => { if (en.isIntersecting) activerLienMenu(en.target.id); });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  ["centre", "services", "praticiens", "agenda", "galerie", "infos"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+
+  // Feedback
+  function pageCourante() {
+    const h = location.hash || "#/";
+    const m = h.match(/^#\/([a-z-]+)$/);
+    if (m && fiches.includes(m[1])) {
+      const noms = { "ilona": "Fiche Ilona", "christiane": "Fiche Christiane", "jp": "Fiche JP", "sarah": "Fiche Sarah", "marie-ange": "Fiche Marie-Ange" };
+      return noms[m[1]] || m[1];
+    }
+    const ancres = { "#services": "Accueil > services", "#praticiens": "Accueil > praticiens", "#agenda": "Accueil > agenda", "#galerie": "Accueil > galerie", "#infos": "Accueil > infos" };
+    return ancres[h] || "Accueil";
+  }
+  function ouvrirFeedback() {
+    document.getElementById("feedbackPage").textContent = pageCourante();
+    document.getElementById("feedbackForm").style.display = "block";
+    document.getElementById("feedbackMerci").classList.remove("visible");
+    document.getElementById("modalFeedback").classList.add("ouvert");
+  }
+  function fermerFeedback() { document.getElementById("modalFeedback").classList.remove("ouvert"); }
+  function envoyerFeedback(e) {
+    e.preventDefault();
+    const texte = document.getElementById("feedbackTexte").value.trim();
+    const nom = document.getElementById("feedbackNom").value.trim();
+    if (!texte) { document.getElementById("feedbackTexte").style.outline = "2px solid var(--ocre)"; return; }
+    const sujet = encodeURIComponent("Retour prototype v1 - " + pageCourante());
+    const corps = encodeURIComponent("Page : " + pageCourante() + "\nPrénom : " + (nom || "(non rempli)") + "\n\n" + texte);
+    window.location.href = "mailto:ile.aux.mains@gmail.com?subject=" + sujet + "&body=" + corps;
+    document.getElementById("feedbackForm").style.display = "none";
+    document.getElementById("feedbackMerci").classList.add("visible");
+  }
+
+  // Hauteur du ruban prototype : header et ancres s'adaptent
+  const ruban = document.querySelector(".ruban-proto");
+  function ajusterRuban() {
+    document.documentElement.style.setProperty("--ruban-h", ruban.offsetHeight + "px");
+  }
+  window.addEventListener("resize", ajusterRuban);
+  ajusterRuban();
+
+  window.addEventListener("hashchange", router);
+  router();
+</script>
+</body>
+</html>
