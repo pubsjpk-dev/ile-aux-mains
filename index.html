@@ -91,6 +91,8 @@
   .carte-service h3 { font-size: 18.5px; margin-bottom: 8px; line-height: 1.3; }
   .carte-service p { font-size: 14px; color: var(--gris); flex-grow: 1; }
   .carte-service .qui { margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--ocre-fonce); }
+  .carte-service .qui a { display: block; color: var(--ocre-fonce); text-decoration: none; font-weight: 700; font-size: 13px; padding: 3px 0; }
+  .carte-service .qui a:hover { text-decoration: underline; }
   section.bloc.fond-nuit .carte-service { background: rgba(250,243,232,.06); border-color: rgba(250,243,232,.15); }
   section.bloc.fond-nuit .carte-service h3 { color: var(--creme); }
   section.bloc.fond-nuit .carte-service p { color: rgba(250,243,232,.7); }
@@ -214,7 +216,7 @@
 </head>
 <body>
 
-<div class="ruban-proto"><b>PROTOTYPE DE VALIDATION &middot; v1 &middot; 13.10.2026</b> &middot; &#128172; en bas à droite = donne ton retour<span class="part-cachee"> &middot; photos = emplacements témoins</span></div>
+<div class="ruban-proto"><b>PROTOTYPE DE VALIDATION &middot; v2 &middot; 13.10.2026</b> &middot; &#128172; en bas à droite = donne ton retour<span class="part-cachee"> &middot; photos = emplacements témoins</span></div>
 
 <header>
   <div class="header-int">
@@ -259,7 +261,7 @@
           <p>Ouvert à tous, toute l'année. Uniquement sur rendez-vous auprès du praticien ou de l'enseignant concerné.</p>
           <div class="chiffres-centre">
             <div class="chiffre-c"><b>5</b><span>praticien·nes</span></div>
-            <div class="chiffre-c"><b>8</b><span>services proposés</span></div>
+            <div class="chiffre-c"><b>7</b><span>services proposés</span></div>
             <div class="chiffre-c"><b>5 min</b><span>de la gare CFF</span></div>
           </div>
         </div>
@@ -273,22 +275,19 @@
       <h2 class="titre-bloc">Nos services</h2>
       <p class="intro-bloc">Le visiteur part de son besoin, pas de nos noms. Chaque carte mène au praticien qui le propose. Cliquez pour tester.</p>
       <div class="grille-services">
-        <div class="carte-service" onclick="allerVersPraticien('christiane')" data-qui="christiane,jp">
+        <div class="carte-service" data-qui="christiane,jp">
           <div class="ico">&#129497;</div>
           <h3>Qi Gong &amp; Tai Ji Quan</h3>
           <p>Arts énergétiques chinois : mouvements lents, respiration, concentration. Cours hebdomadaires, tous niveaux.</p>
-          <div class="qui">Avec Christiane (mercredi) et JP (jeudi) &rarr;</div>
+          <div class="qui">
+            <a href="#/christiane">Mercredi : Qi Gong 9h30 &middot; Tai Ji Quan 10h30, avec Christiane</a>
+            <a href="#/jp">Jeudi 19h : Qi Gong, avec JP</a>
+          </div>
         </div>
         <div class="carte-service" onclick="allerVersPraticien('ilona')">
           <div class="ico">&#129683;</div>
           <h3>Acupuncture &amp; soins de cicatrices</h3>
           <p>Traitement des cicatrices obstétricales (césarienne, épisiotomie) et suivi énergétique par acupuncture.</p>
-          <div class="qui">Avec Ilona &rarr;</div>
-        </div>
-        <div class="carte-service" onclick="allerVersPraticien('ilona')">
-          <div class="ico">&#128068;</div>
-          <h3>Shiatsu</h3>
-          <p>Pression des doigts sur les méridiens pour rééquilibrer l'énergie et relâcher les tensions profondes.</p>
           <div class="qui">Avec Ilona &rarr;</div>
         </div>
         <div class="carte-service" onclick="allerVersPraticien('sarah')">
@@ -347,7 +346,7 @@
         <div class="carte-praticien" onclick="allerVersPraticien('jp')">
           <div class="avatar">JP</div>
           <h3>JP Kuhni</h3>
-          <div class="spec">Qi Gong, jeudi soir</div>
+          <div class="spec">Qi Gong, jeudi 19h</div>
           <div class="desc">Plus de 30 ans de pratique, école Longmen. 1er Duan de Tai-chi Chuan (FAEMC).</div>
           <div class="voir">Voir la fiche &rarr;</div>
         </div>
@@ -378,7 +377,7 @@
           <tr><th>Cours</th><th>Quand</th><th>Qui</th></tr>
           <tr><td>Qi Gong</td><td>Mercredi 9h30 - 10h30</td><td class="qui">Christiane</td></tr>
           <tr><td>Tai Ji Quan I</td><td>Mercredi 10h30 - 12h00</td><td class="qui">Christiane</td></tr>
-          <tr><td>Qi Gong</td><td>Jeudi soir</td><td class="qui">JP</td></tr>
+          <tr><td>Qi Gong</td><td>Jeudi 19h</td><td class="qui">JP</td></tr>
           <tr><td>Méditation (atelier)</td><td>Sur demande</td><td class="qui">Christiane</td></tr>
         </table>
         <div>
@@ -517,7 +516,7 @@
     <a class="retour" href="#praticiens" data-retour="praticiens">&larr; Retour aux praticiens</a>
     <div class="avatar">JP</div>
     <h1>JP Kuhni</h1>
-    <div class="spec-hero">Qi Gong, le jeudi soir</div>
+    <div class="spec-hero">Qi Gong, le jeudi 19h</div>
   </div></div>
   <div class="fiche-corps"><div class="conteneur fiche-duo">
     <div class="fiche-bio">
@@ -528,7 +527,7 @@
       <div class="fiche-bloc">
         <h3>Son offre</h3>
         <ul>
-          <li>Cours hebdomadaire de Qi Gong : le jeudi soir à l'Arcade</li>
+          <li>Cours hebdomadaire de Qi Gong : le jeudi 19h à l'Arcade</li>
           <li>Tous niveaux : détente, souffle, énergie</li>
           <li>École Dragon Or</li>
         </ul>
@@ -646,7 +645,7 @@
     </div>
     <div class="rdv-pers">
       <div class="avatar">JP</div>
-      <div class="info"><b>JP Kuhni</b><span>Qi Gong, jeudi soir</span></div>
+      <div class="info"><b>JP Kuhni</b><span>Qi Gong, jeudi 19h</span></div>
       <a class="cta-ligne" href="http://www.dragon-or.ch/" target="_blank">Site</a>
     </div>
     <div class="rdv-pers">
@@ -777,7 +776,7 @@
     if (!texte) { document.getElementById("feedbackTexte").style.outline = "2px solid var(--ocre)"; return; }
     const sujet = encodeURIComponent("Retour prototype v1 - " + pageCourante());
     const corps = encodeURIComponent("Page : " + pageCourante() + "\nPrénom : " + (nom || "(non rempli)") + "\n\n" + texte);
-    window.location.href = "mailto:ile.aux.mains@gmail.com?subject=" + sujet + "&body=" + corps;
+    window.location.href = "mailto:jppubs@ik.me?subject=" + sujet + "&body=" + corps;
     document.getElementById("feedbackForm").style.display = "none";
     document.getElementById("feedbackMerci").classList.add("visible");
   }
